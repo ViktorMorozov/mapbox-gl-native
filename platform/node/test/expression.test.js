@@ -73,7 +73,11 @@ suite.run('native', {ignores: ignores, tests: tests}, (fixture) => {
     result.outputs = evaluateExpression(expression, compiled);
     if (expression instanceof mbgl.Expression) {
         const recompiledExpression = mbgl.Expression.parse(expression.serialize(), getExpectedType(spec));
-        result.reEvalOutputs = evaluateExpression(recompiledExpression, recompiled);
+        result.roundTripOutputs = evaluateExpression(recompiledExpression, recompiled);
+        // Type is allowed to change through serialization
+        // (eg "array" -> "array<number, 3>")
+        // Override the round-tripped type here so that the equality check passes
+        recompiled.type = compiled.type;
     }
 
     return result;
