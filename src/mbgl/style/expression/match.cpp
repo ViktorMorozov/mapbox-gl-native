@@ -45,7 +45,9 @@ mbgl::Value Match<T>::serialize() const {
     std::vector<mbgl::Value> serialized;
     serialized.emplace_back(getOperator());
     serialized.emplace_back(input->serialize());
-    for (auto& entry : branches) {
+    // Sort the branches so serialization has a defined order, even though branch order doesn't affect evaluation
+    std::map<T, std::shared_ptr<Expression>> sortedBranches(branches.begin(), branches.end());
+    for (auto& entry : sortedBranches) {
         serialized.emplace_back(entry.first);
         serialized.emplace_back(entry.second->serialize());
     };
