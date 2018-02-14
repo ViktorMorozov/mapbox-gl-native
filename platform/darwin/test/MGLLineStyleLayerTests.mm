@@ -472,6 +472,50 @@
         XCTAssertEqual(lineGapWidthTransition.duration, transitionTest.duration);
     }
 
+    // line-gradient
+    {
+        XCTAssertTrue(rawLayer->getLineGradient().isUndefined(),
+                      @"line-gradient should be unset initially.");
+        NSExpression *defaultExpression = layer.lineGradient;
+
+        NSExpression *constantExpression = [NSExpression expressionWithFormat:@"%@", [MGLColor redColor]];
+        layer.lineGradient = constantExpression;
+        mbgl::style::PropertyValue<mbgl::Color> propertyValue = { { 1, 0, 0, 1 } };
+        XCTAssertEqual(rawLayer->getLineGradient(), propertyValue,
+                       @"Setting lineGradient to a constant value expression should update line-gradient.");
+        XCTAssertEqualObjects(layer.lineGradient, constantExpression,
+                              @"lineGradient should round-trip constant value expressions.");
+
+        constantExpression = [NSExpression expressionWithFormat:@"%@", [MGLColor redColor]];
+        NSExpression *functionExpression = [NSExpression expressionWithFormat:@"FUNCTION($zoomLevel, 'mgl_stepWithMinimum:stops:', %@, %@)", constantExpression, @{@18: constantExpression}];
+        layer.lineGradient = functionExpression;
+
+        mbgl::style::IntervalStops<mbgl::Color> intervalStops = {{
+            { -INFINITY, { 1, 0, 0, 1 } },
+            { 18, { 1, 0, 0, 1 } },
+        }};
+        propertyValue = mbgl::style::CameraFunction<mbgl::Color> { intervalStops };
+        
+        XCTAssertEqual(rawLayer->getLineGradient(), propertyValue,
+                       @"Setting lineGradient to a camera expression should update line-gradient.");
+        XCTAssertEqualObjects(layer.lineGradient, functionExpression,
+                              @"lineGradient should round-trip camera expressions.");
+
+                              
+
+        layer.lineGradient = nil;
+        XCTAssertTrue(rawLayer->getLineGradient().isUndefined(),
+                      @"Unsetting lineGradient should return line-gradient to the default value.");
+        XCTAssertEqualObjects(layer.lineGradient, defaultExpression,
+                              @"lineGradient should return the default value after being unset.");
+
+        functionExpression = [NSExpression expressionForKeyPath:@"bogus"];
+        XCTAssertThrowsSpecificNamed(layer.lineGradient = functionExpression, NSException, NSInvalidArgumentException, @"MGLLineLayer should raise an exception if a camera-data expression is applied to a property that does not support key paths to feature attributes.");
+        functionExpression = [NSExpression expressionWithFormat:@"FUNCTION(bogus, 'mgl_stepWithMinimum:stops:', %@, %@)", constantExpression, @{@18: constantExpression}];
+        functionExpression = [NSExpression expressionWithFormat:@"FUNCTION($zoomLevel, 'mgl_interpolateWithCurveType:parameters:stops:', 'linear', nil, %@)", @{@10: functionExpression}];
+        XCTAssertThrowsSpecificNamed(layer.lineGradient = functionExpression, NSException, NSInvalidArgumentException, @"MGLLineLayer should raise an exception if a camera-data expression is applied to a property that does not support key paths to feature attributes.");
+    }
+
     // line-offset
     {
         XCTAssertTrue(rawLayer->getLineOffset().isUndefined(),
@@ -839,6 +883,7 @@
     [self testPropertyName:@"line-color" isBoolean:NO];
     [self testPropertyName:@"line-dash-pattern" isBoolean:NO];
     [self testPropertyName:@"line-gap-width" isBoolean:NO];
+    [self testPropertyName:@"line-gradient" isBoolean:NO];
     [self testPropertyName:@"line-offset" isBoolean:NO];
     [self testPropertyName:@"line-opacity" isBoolean:NO];
     [self testPropertyName:@"line-pattern" isBoolean:NO];

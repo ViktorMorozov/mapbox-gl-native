@@ -631,6 +631,36 @@ public class PropertyFactory {
   }
 
   /**
+   * ¡ EXPERIMENTAL, UNSUPPORTED ! Defines the color of a point of a line based on its progress along the line, if using gradient lines.
+   *
+   * @param value a int color value
+   * @return property wrapper around String color
+   */
+  public static PropertyValue<String> lineGradient(@ColorInt int value) {
+    return new PaintPropertyValue<>("line-gradient", colorToRgbaString(value));
+  }
+
+  /**
+   * ¡ EXPERIMENTAL, UNSUPPORTED ! Defines the color of a point of a line based on its progress along the line, if using gradient lines.
+   *
+   * @param value a String value
+   * @return property wrapper around String
+   */
+  public static PropertyValue<String> lineGradient(String value) {
+    return new PaintPropertyValue<>("line-gradient", value);
+  }
+
+  /**
+   * ¡ EXPERIMENTAL, UNSUPPORTED ! Defines the color of a point of a line based on its progress along the line, if using gradient lines.
+   *
+   * @param expression an expression statement
+   * @return property wrapper around an expression statement
+   */
+  public static PropertyValue<Expression> lineGradient(Expression expression) {
+    return new PaintPropertyValue<>("line-gradient", expression);
+  }
+
+  /**
    * The opacity at which the icon will be drawn.
    *
    * @param value a Float value
